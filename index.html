@@ -120,6 +120,10 @@
           </select>
         </div>
         <div class="field">
+          <label for="spinInput">Spin (°)</label>
+          <input id="spinInput" type="range" min="-180" max="180" step="1" value="0" />
+        </div>
+        <div class="field">
           <label for="zoomInput">Zoom</label>
           <input id="zoomInput" type="range" min="0.2" max="20" step="0.01" value="1" />
         </div>
@@ -149,6 +153,7 @@
       const camDistInput = document.getElementById('camDistInput');
       const perspectiveInput = document.getElementById('perspectiveInput');
       const imageInput = document.getElementById('imageInput');
+      const spinInput = document.getElementById('spinInput');
       const aspectInput = document.getElementById('aspectInput');
       const applyButton = document.getElementById('applyButton');
       const resetButton = document.getElementById('resetButton');
@@ -278,6 +283,7 @@
         let zoom = 1.0;
         let camDist = 3.8;
         let perspective = 1.0;
+        let angleZ = 0.0;
         let isDragging = false;
         let dragStartX = 0;
         let dragStartY = 0;
@@ -296,6 +302,12 @@
         }
 
         function rotatePoint(x, y, z) {
+          const cosZ = Math.cos(angleZ);
+          const sinZ = Math.sin(angleZ);
+          const xz = x * cosZ - y * sinZ;
+          const yz = x * sinZ + y * cosZ;
+          x = xz; y = yz;
+
           const cosY = Math.cos(angleY);
           const sinY = Math.sin(angleY);
           const cosX = Math.cos(angleX);
@@ -417,6 +429,11 @@
           render();
         });
 
+        spinInput.addEventListener('input', (event) => {
+          angleZ = Number(event.target.value) * Math.PI / 180;
+          render();
+        });
+
         camDistInput.addEventListener('input', (event) => {
           camDist = Number(event.target.value);
           render();
@@ -465,9 +482,11 @@
           perspective = 1.0;
           angleX = 0.0;
           angleY = 0.0;
+          angleZ = 0.0;
           zoomInput.value = zoom;
           camDistInput.value = camDist;
           perspectiveInput.value = perspective;
+          spinInput.value = 0;
           render();
         });
 
