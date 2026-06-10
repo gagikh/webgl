@@ -133,6 +133,7 @@
         </div>
         <button id="applyButton" type="button">Apply size</button>
         <button id="resetButton" type="button">Reset view</button>
+        <button id="previewButton" type="button">Preview full size</button>
       </div>
       <div class="canvas-wrap">
         <canvas id="glCanvas"></canvas>
@@ -151,8 +152,9 @@
       const aspectInput = document.getElementById('aspectInput');
       const applyButton = document.getElementById('applyButton');
       const resetButton = document.getElementById('resetButton');
+      const previewButton = document.getElementById('previewButton');
 
-      const gl = canvas.getContext('webgl');
+      const gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
       if (!gl) {
         document.body.innerHTML = '<div style="color:white; font-family:sans-serif; padding:24px;">WebGL is not available in this browser.</div>';
       } else {
@@ -467,6 +469,16 @@
           camDistInput.value = camDist;
           perspectiveInput.value = perspective;
           render();
+        });
+
+        previewButton.addEventListener('click', () => {
+          render();
+          const win = window.open('', '_blank');
+          win.document.write(`<!DOCTYPE html><html><head><title>Preview</title>
+            <style>body{margin:0;background:#111;display:flex;justify-content:center;align-items:flex-start;}
+            img{max-width:100%;display:block;}</style></head>
+            <body><img src="${canvas.toDataURL('image/png')}"></body></html>`);
+          win.document.close();
         });
 
         canvas.style.cursor = 'grab';
