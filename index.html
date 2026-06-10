@@ -305,7 +305,7 @@
           const y2 = y1 * cosX - z1 * sinX;
           const z2 = y1 * sinX + z1 * cosX;
 
-          const depth = Math.max(0.05, camDist + z2 * perspective);
+          const depth = Math.max(0.05, camDist + z2 * perspective * 2.5);
           const scale = 0.46 * zoom * camDist / depth;
           const aspect = canvas.width / canvas.height;
           const displayAspect = getDisplayAspect();
