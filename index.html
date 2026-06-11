@@ -391,6 +391,7 @@
         }
 
         canvas.addEventListener('mousedown', (event) => {
+          if (event.button !== 0) return;
           isDragging = true;
           dragStartX = event.clientX;
           dragStartY = event.clientY;
@@ -423,6 +424,40 @@
           }
           render();
         }, { passive: false });
+
+        canvas.addEventListener('contextmenu', (event) => {
+          event.preventDefault();
+          render();
+          const w = canvas.width, h = canvas.height;
+          const pixels = new Uint8Array(w * h * 4);
+          gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+          const rowSize = Math.floor((24 * w + 31) / 32) * 4;
+          const buf = new ArrayBuffer(54 + rowSize * h);
+          const v = new DataView(buf);
+          v.setUint8(0, 0x42); v.setUint8(1, 0x4D);
+          v.setUint32(2, 54 + rowSize * h, true);
+          v.setUint32(6, 0, true); v.setUint32(10, 54, true);
+          v.setUint32(14, 40, true);
+          v.setInt32(18, w, true); v.setInt32(22, h, true);
+          v.setUint16(26, 1, true); v.setUint16(28, 24, true);
+          v.setUint32(30, 0, true); v.setUint32(34, rowSize * h, true);
+          v.setUint32(38, 0, true); v.setUint32(42, 0, true);
+          v.setUint32(46, 0, true); v.setUint32(50, 0, true);
+          for (let row = 0; row < h; row++) {
+            for (let col = 0; col < w; col++) {
+              const s = (row * w + col) * 4;
+              const d = 54 + row * rowSize + col * 3;
+              v.setUint8(d, pixels[s + 2]);
+              v.setUint8(d + 1, pixels[s + 1]);
+              v.setUint8(d + 2, pixels[s]);
+            }
+          }
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([buf], { type: 'image/bmp' }));
+          a.download = 'render.bmp';
+          a.click();
+          URL.revokeObjectURL(a.href);
+        });
 
         zoomInput.addEventListener('input', (event) => {
           zoom = Number(event.target.value);
